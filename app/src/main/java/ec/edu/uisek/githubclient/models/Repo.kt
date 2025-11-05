@@ -9,3 +9,7 @@ data class Repo (
 
 
 )
+data class RepoRequest(
+    val name: String,
+    val description: String,
+)

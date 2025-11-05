@@ -5,5 +5,8 @@
     <string name="repo_description">Descripcion</string>
     <string name="repo_lang">lenguaje </string>
     <string name="text_lang">kotling</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+
 
 </resources>

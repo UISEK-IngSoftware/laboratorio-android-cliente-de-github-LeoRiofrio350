@@ -1,5 +1,6 @@
 package ec.edu.uisek.githubclient
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupRecyclerView()
+
+        binding.newRepoFab.setOnClickListener {
+            displayNewRepoForm()
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
         fetchRepositories()
     }
 
@@ -30,22 +40,22 @@ class MainActivity : AppCompatActivity() {
         binding.reposRecyclerView.adapter = reposAdapter
     }
 
-    private  fun fetchRepositories(){
-        val apiService : GithubApiService = RetrofitClient.gitHubApiService
+    private fun fetchRepositories() {
+        val apiService: GithubApiService = RetrofitClient.gitHubApiService
         val call = apiService.getRepos()
 
-        call.enqueue(object : Callback<List<Repo>>{
+        call.enqueue(object : Callback<List<Repo>> {
             override fun onResponse(call: Call<List<Repo>?>, response: Response<List<Repo>?>) {
-                if(response.isSuccessful){
+                if (response.isSuccessful) {
                     val repos = response.body()
-                    if(repos !=null && repos.isNotEmpty()){
+                    if (repos != null && repos.isNotEmpty()) {
                         reposAdapter.updateRepositories(repos)
-                    } else{
+                    } else {
                         showMessage("No se encontraron repositorios")
                     }
 
-                }else{
-                    val errorMessage = when(response.code()){
+                } else {
+                    val errorMessage = when (response.code()) {
                         401 -> "No autorizado"
                         403 -> "Prohibido"
                         404 -> "No encontrado"
@@ -57,7 +67,6 @@ class MainActivity : AppCompatActivity() {
             }
 
 
-
             override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
                 showMessage("No se pudieron cargar repositorios")
             }
@@ -65,7 +74,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMessage(message: String) {
-        Toast.makeText(this,message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun displayNewRepoForm() {
+        Intent(this, RepoForm::class.java).apply {
+            startActivity(this)
+        }
     }
 
 }
