@@ -1,5 +1,6 @@
 package ec.edu.uisek.githubclient
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -36,7 +37,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        reposAdapter = ReposAdapter()
+        reposAdapter = ReposAdapter(
+            onEditClick = { repo -> handleEditClick(repo) },
+            onDeleteClick = { repo -> handleDeleteClick(repo) }
+        )
         binding.reposRecyclerView.adapter = reposAdapter
     }
 
@@ -52,29 +56,23 @@ class MainActivity : AppCompatActivity() {
                         reposAdapter.updateRepositories(repos)
                     } else {
                         showMessage("No se encontraron repositorios")
+                        reposAdapter.updateRepositories(emptyList()) // Limpiar la lista si no hay repositorios
                     }
 
                 } else {
-                    val errorMessage = when (response.code()) {
-                        401 -> "No autorizado"
-                        403 -> "Prohibido"
-                        404 -> "No encontrado"
-                        else -> "Error ${response.code()}"
-                    }
-                    showMessage("Error: $errorMessage")
-
+                    handleApiError("Error al cargar repositorios", response.code())
                 }
             }
 
 
             override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
-                showMessage("No se pudieron cargar repositorios")
+                showMessage("Fallo en la conexión al cargar repositorios")
             }
         })
     }
 
     private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun displayNewRepoForm() {
@@ -83,4 +81,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // CORREGIDO: Pasa el nombre del dueño al formulario de edición
+    private fun handleEditClick(repo: Repo) {
+        val intent = Intent(this, RepoForm::class.java).apply {
+            putExtra("EDIT_MODE", true)
+            putExtra("REPO_OWNER", repo.owner.login) // Añadido
+            putExtra("REPO_NAME", repo.name)
+            putExtra("REPO_DESCRIPTION", repo.description)
+        }
+        startActivity(intent)
+    }
+
+    private fun handleDeleteClick(repo: Repo) {
+        AlertDialog.Builder(this)
+            .setTitle("Confirmar Eliminación")
+            .setMessage("¿Estás seguro de que quieres eliminar el repositorio '${repo.name}'?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                deleteRepository(repo)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    // CORREGIDO: Usa el dueño del repositorio específico para eliminar
+    private fun deleteRepository(repo: Repo) {
+        RetrofitClient.gitHubApiService.deleteRepo(repo.owner.login, repo.name)
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        showMessage("Repositorio eliminado con éxito")
+                        fetchRepositories() // Actualizar la lista
+                    } else {
+                        handleApiError("Error al eliminar", response.code())
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    showMessage("Fallo en la conexión al eliminar")
+                }
+            })
+    }
+
+    private fun handleApiError(contextMessage: String, code: Int) {
+        val errorMessage = when (code) {
+            401 -> "No autorizado. Revisa tu token de GitHub."
+            403 -> "Prohibido. Revisa los permisos (scopes) de tu token de GitHub. Necesitas 'repo' y 'delete_repo'."
+            404 -> "No encontrado. El repositorio o usuario no existe."
+            else -> "Error código: $code"
+        }
+        showMessage("$contextMessage: $errorMessage")
+    }
 }

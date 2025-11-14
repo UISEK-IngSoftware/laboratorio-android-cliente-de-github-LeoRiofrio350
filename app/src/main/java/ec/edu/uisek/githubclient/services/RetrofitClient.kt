@@ -23,7 +23,7 @@ object RetrofitClient {
 
         val newRequest = if (token.isNotEmpty()) {
             originalRequest.newBuilder()
-                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Authorization", "Bearer $token") // Corregido para usar el token dinámico
                 .addHeader("Accept", "application/vnd.github.v3+json")
                 .build()
         } else {
@@ -38,7 +38,7 @@ object RetrofitClient {
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
-            HttpLoggingInterceptor.Level.BASIC
+            HttpLoggingInterceptor.Level.BODY // Cambiado a BODY para ver más detalles en depuración
         } else {
             HttpLoggingInterceptor.Level.NONE
         }
