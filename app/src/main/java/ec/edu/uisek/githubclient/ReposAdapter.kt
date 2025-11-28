@@ -7,7 +7,7 @@ import com.bumptech.glide.Glide
 import ec.edu.uisek.githubclient.databinding.FragmentRepoitemBinding
 import ec.edu.uisek.githubclient.models.Repo
 
-// ViewHolder con botones de acción
+
 class ReposViewHolder(
     private val binding: FragmentRepoitemBinding,
     private val onEditClick: (Repo) -> Unit,
@@ -15,12 +15,10 @@ class ReposViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(repo: Repo) {
-        // Datos del repositorio
         binding.repoName.text = repo.name
         binding.repoDescription.text = repo.description ?: "Sin descripción"
         binding.repoLang.text = repo.language ?: "Desconocido"
 
-        // Avatar del owner (circular)
         Glide.with(binding.root.context)
             .load(repo.owner.avatarUrl)
             .placeholder(R.mipmap.ic_launcher)
@@ -40,7 +38,7 @@ class ReposViewHolder(
     }
 }
 
-// Adapter con callbacks para editar y eliminar
+//  editar y eliminar
 class ReposAdapter(
     private val onEditClick: (Repo) -> Unit,
     private val onDeleteClick: (Repo) -> Unit

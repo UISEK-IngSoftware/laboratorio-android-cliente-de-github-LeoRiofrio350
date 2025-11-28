@@ -12,7 +12,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// Objeto para definir el cuerpo de la petición de renombrado
 data class RenameRepoRequest(val name: String)
 
 interface GithubApiService {
@@ -28,7 +27,7 @@ interface GithubApiService {
         @Body repoRequest: RepoRequest
     ): Call<Repo>
 
-    // Esta función ahora solo actualizará los detalles (descripción, etc.)
+    //  actualizará
     @PATCH("repos/{owner}/{repo}")
     fun updateRepoDetails(
         @Path("owner") owner: String,
@@ -36,7 +35,7 @@ interface GithubApiService {
         @Body updates: Map<String, String>
     ): Call<Repo>
 
-    // Esta función renombrará el repositorio. Es la misma ruta pero se usa diferente.
+    //  renombrará y actulizara el nombre solo
     @PATCH("repos/{owner}/{repo}")
     fun renameRepo(
         @Path("owner") owner: String,

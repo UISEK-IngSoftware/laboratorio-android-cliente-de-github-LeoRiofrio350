@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchRepositories() {
-        val apiService: GithubApiService = RetrofitClient.gitHubApiService
+        val apiService: GithubApiService = RetrofitClient.getApiService()
         val call = apiService.getRepos()
 
         call.enqueue(object : Callback<List<Repo>> {
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                         reposAdapter.updateRepositories(repos)
                     } else {
                         showMessage("No se encontraron repositorios")
-                        reposAdapter.updateRepositories(emptyList()) // Limpiar la lista si no hay repositorios
+                        reposAdapter.updateRepositories(emptyList())
                     }
 
                 } else {
@@ -81,11 +81,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // CORREGIDO: Pasa el nombre del dueño al formulario de edición
+    // nombre a edicion
     private fun handleEditClick(repo: Repo) {
         val intent = Intent(this, RepoForm::class.java).apply {
             putExtra("EDIT_MODE", true)
-            putExtra("REPO_OWNER", repo.owner.login) // Añadido
+            putExtra("REPO_OWNER", repo.owner.login)
             putExtra("REPO_NAME", repo.name)
             putExtra("REPO_DESCRIPTION", repo.description)
         }
@@ -103,14 +103,14 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // CORREGIDO: Usa el dueño del repositorio específico para eliminar
+    // eliminar
     private fun deleteRepository(repo: Repo) {
-        RetrofitClient.gitHubApiService.deleteRepo(repo.owner.login, repo.name)
+        RetrofitClient.getApiService().deleteRepo(repo.owner.login, repo.name)
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         showMessage("Repositorio eliminado con éxito")
-                        fetchRepositories() // Actualizar la lista
+                        fetchRepositories() // Actualizar
                     } else {
                         handleApiError("Error al eliminar", response.code())
                     }

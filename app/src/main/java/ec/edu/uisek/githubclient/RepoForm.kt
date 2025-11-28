@@ -34,7 +34,7 @@ class RepoForm : AppCompatActivity() {
             owner = intent.getStringExtra("REPO_OWNER") ?: ""
             originalName = intent.getStringExtra("REPO_NAME") ?: ""
             binding.repoNameInput.setText(originalName)
-            binding.repoNameInput.isEnabled = true // CORREGIDO: Habilitar edición del nombre
+            binding.repoNameInput.isEnabled = true
             binding.repoDescriptionInput.setText(intent.getStringExtra("REPO_DESCRIPTION"))
             binding.saveButton.text = "Actualizar"
         }
@@ -65,7 +65,7 @@ class RepoForm : AppCompatActivity() {
         val name = binding.repoNameInput.text.toString().trim()
         val desc = binding.repoDescriptionInput.text.toString().trim()
         val request = RepoRequest(name, desc)
-        RetrofitClient.gitHubApiService.addRepo(request)
+        RetrofitClient.getApiService().addRepo(request)
             .enqueue(object : Callback<Repo> {
                 override fun onResponse(call: Call<Repo>, response: Response<Repo>) {
                     if (response.isSuccessful) {
@@ -81,7 +81,6 @@ class RepoForm : AppCompatActivity() {
             })
     }
 
-    // Lógica de actualización completamente nueva
     private fun updateRepo() {
         if (!validateForm()) return
 
@@ -91,13 +90,13 @@ class RepoForm : AppCompatActivity() {
         val nameHasChanged = newName != originalName
 
         if (nameHasChanged) {
-            // Paso 1: Renombrar el repositorio
+            //Renombra
             val renameRequest = RenameRepoRequest(newName)
-            RetrofitClient.gitHubApiService.renameRepo(owner, originalName, renameRequest)
+            RetrofitClient.getApiService().renameRepo(owner, originalName, renameRequest)
                 .enqueue(object : Callback<Repo> {
                     override fun onResponse(call: Call<Repo>, response: Response<Repo>) {
                         if (response.isSuccessful) {
-                            // Paso 2: Actualizar la descripción del repositorio (ya renombrado)
+                            //A decripcion
                             updateRepoDescription(newName, newDescription)
                         } else {
                             handleApiError("Error al renombrar", response.code())
@@ -109,14 +108,13 @@ class RepoForm : AppCompatActivity() {
                     }
                 })
         } else {
-            // Si el nombre no ha cambiado, solo actualizar la descripción
             updateRepoDescription(originalName, newDescription)
         }
     }
 
     private fun updateRepoDescription(repoName: String, description: String) {
         val updates = mapOf("description" to description)
-        RetrofitClient.gitHubApiService.updateRepoDetails(owner, repoName, updates)
+        RetrofitClient.getApiService().updateRepoDetails(owner, repoName, updates)
             .enqueue(object : Callback<Repo> {
                 override fun onResponse(call: Call<Repo>, response: Response<Repo>) {
                     if (response.isSuccessful) {
